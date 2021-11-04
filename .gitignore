@@ -1,0 +1,10 @@
+/bin/
+*.csv
+*.obj
+.project
+.classpath
+.DS_Store
+/.settings/
+/Scripts/
+/changes/
+/math3/
