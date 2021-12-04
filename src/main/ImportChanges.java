@@ -3,21 +3,19 @@ package main;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.dom.AST;
+import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.ASTParser;
 import org.eclipse.jdt.core.dom.CompilationUnit;
 
@@ -25,24 +23,21 @@ import com.google.common.base.Charsets;
 import com.google.common.io.CharStreams;
 
 import hk.ust.cse.pishon.esgen.model.Change;
-import model.Benchmark;
+import hk.ust.cse.pishon.esgen.model.EditOp;
+import hk.ust.cse.pishon.esgen.model.EditScript;
 import model.Node;
-import model.Script;
+import model.NodeEdit;
+import model.TreeEdit;
 import tree.NodeVisitor;
 import util.ScriptConverter;
 
-public class CreateBenchmark {
+public class ImportChanges {
 
 	public static void main(String[] args) {
-		String path = null;
-		if(args.length >= 1){
-			path = args[0];
-		}else{
-			System.out.println("CreateBenchmark [path to files]");
-			path = "Scripts";
-		}
+		String path = "scripts";
+
 		System.setProperty("las.enable.gumtree.ast", "false");
-		Benchmark benchmark = new Benchmark();
+
 		List<File> files = findChangeFiles(new File(path));
 		System.out.println("Total "+files.size()+" Change Files.");
 		List<Change> changes = readChanges(files);
@@ -56,77 +51,41 @@ public class CreateBenchmark {
 				String oldCode = convertToString(change.getOldFile().getContents());
 				String newCode = convertToString(change.getNewFile().getContents());
 				String changeName = change.getName();
-				benchmark.addChange(changeName, oldCode, newCode);
+				System.out.println(changeName);
 				oldNodes = parse(oldCode);
 				newNodes = parse(newCode);
-				Script script = converter.convert(change.getScript(), oldNodes, newNodes);
-				benchmark.addItem(changeName, script);
+				EditScript editScript = change.getScript();
+				List<NodeEdit> nodeEdits = new ArrayList<>();
+				for(EditOp op : editScript.getEditOps()) {
+					nodeEdits.addAll(converter.convert(op, oldNodes, newNodes));
+				}
+
+				//Group node-level edits and leave only the roots of subtrees.
+				List<TreeEdit> rootEdits = converter.groupSubtrees(nodeEdits);
+
+				for(TreeEdit e : rootEdits) {
+					String changeType = e.nodeEdit.type;
+					String entityType = getEntityType(e.nodeEdit.node);
+					int startPos = e.nodeEdit.node.pos;
+					//Import data to DB here.
+					System.out.println(changeType + " " + entityType);
+				}
+
 
 			} catch (CoreException e) {
 				e.printStackTrace();
 			}
 		}
-		Set<String> changeNames = benchmark.getChangeNames();
-		for(String changeName : changeNames){
-			System.out.println("Change:"+changeName);
-			System.out.println("Uniq. Script Count:"+benchmark.uniqueCount(changeName));
-			System.out.println("Total Script Count:"+benchmark.totalCount(changeName));
-			StringBuffer sb = new StringBuffer();
-			for(Script s : benchmark.getScripts(changeName).elementSet()){
-				sb.append("Script\n");
-				sb.append(s.textScript+"\n");
-				sb.append("Vote:"+benchmark.cardinality(changeName, s)+"\n");
-				sb.append("Size:"+s.editOps.size()+"\n");
-				sb.append(s.toString()+"\n");
-			}
-			saveToFile("changes/"+changeName+"/benchmark_las.txt", sb.toString());
-		}
-		storeBenchmark("benchmark.obj", benchmark);
 	}
 
-	private static void saveToFile(String fileName, String content) {
-		FileOutputStream out = null;
-		PrintWriter pw = null;
+	private static String getEntityType(Node node) {
+		String nodeType = "";
 		try {
-			out = new FileOutputStream(fileName);
-			pw = new PrintWriter(out);
-			pw.print(content);
-			pw.flush();
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
-		} finally {
-			try {
-				if(out != null)
-					out.close();
-				if(pw != null)
-					pw.close();
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
+			nodeType = ASTNode.nodeClassForType(node.type).getSimpleName();
+		}catch(Exception e) {
+			nodeType = node.label.substring(0, node.label.indexOf('#'));
 		}
-	}
-
-	private static void storeBenchmark(String fileName, Benchmark benchmark) {
-		FileOutputStream fos = null;
-		ObjectOutputStream oos = null;
-		try {
-			fos = new FileOutputStream(new File(fileName));
-			oos = new ObjectOutputStream(fos);
-			oos.writeObject(benchmark);
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
-		} catch (IOException e) {
-			e.printStackTrace();
-		} finally {
-			try {
-				if(fos != null)
-					fos.close();
-				if(oos != null)
-					oos.close();
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-		}
+		return nodeType;
 	}
 
 	private static String convertToString(InputStream is){
@@ -195,7 +154,9 @@ public class CreateBenchmark {
 	private static List<File> findChangeFiles(File path) {
 		List<File> files = new ArrayList<>();
 		if(path.isDirectory()){
-			for(File f : path.listFiles()){
+			File[] targets = path.listFiles();
+			Arrays.sort(targets, (f1, f2)->(f1.getName().compareTo(f2.getName())));
+			for(File f : targets){
 				if(f.isDirectory()){
 					files.addAll(findChangeFiles(f));
 				}else if(f.getName().equals("changes.obj")){
@@ -211,3 +172,4 @@ public class CreateBenchmark {
 	}
 
 }
+

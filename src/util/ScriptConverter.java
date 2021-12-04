@@ -7,6 +7,7 @@ import hk.ust.cse.pishon.esgen.model.EditOp;
 import hk.ust.cse.pishon.esgen.model.EditScript;
 import model.Node;
 import model.NodeEdit;
+import model.TreeEdit;
 import tree.TreeNode;
 
 public class ScriptConverter implements ConvertScript {
@@ -128,5 +129,68 @@ public class ScriptConverter implements ConvertScript {
 			}
 		}
 		return nodesInRange;
+	}
+
+	public List<TreeEdit> groupSubtrees(List<NodeEdit> nodeEdits) {
+		List<NodeEdit> edits = new ArrayList<>(nodeEdits);
+		List<TreeEdit> roots = new ArrayList<>();
+		while(edits.size() > 0) {
+			NodeEdit e = edits.get(0);
+			TreeEdit r = groupSubtree(e, edits);
+			roots.add(r);
+		}
+		return roots;
+	}
+
+	private TreeEdit groupSubtree(NodeEdit r, List<NodeEdit> edits) {
+		if(r == null)
+			return null;
+		TreeEdit root = new TreeEdit(r);
+
+		//Find root.
+		TreeEdit p;
+		Node pNode;
+		do {
+			p = null;
+			pNode = root.nodeEdit.location;
+			if(pNode != null && pNode.type != -1) {
+				for(NodeEdit e : edits) {
+					if(pNode.equals(e.node) && e.type.equals(r.type)) {
+						p = new TreeEdit(e);
+						break;
+					}
+				}
+			}
+			if(p != null)
+				root = p;
+		} while (p != null);
+
+		List<TreeEdit> targets = new ArrayList<>();
+		List<TreeEdit> grouped = new ArrayList<>();
+		targets.add(root);
+		edits.remove(root.nodeEdit);
+		do {
+			targets.addAll(grouped);
+			grouped.clear();
+			//Find children of each target.
+			for(TreeEdit target : targets){
+				for (Node child : target.nodeEdit.node.children) {
+					for (NodeEdit e : edits) {
+						if (e.node.equals(child) && target.nodeEdit.type.equals(e.type)) {
+							TreeEdit t = new TreeEdit(e);
+							target.children.add(t);
+							grouped.add(t);
+							break;
+						}
+					}
+				}
+			}
+			//Remove grouped.
+			for(TreeEdit t : grouped){
+				edits.remove(t.nodeEdit);
+			}
+		} while (grouped.size() > 0 && edits.size() > 0);
+
+		return root;
 	}
 }

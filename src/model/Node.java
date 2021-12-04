@@ -46,7 +46,9 @@ public class Node implements Serializable {
 				//Handling GumTree Update operations without node information.
 				return n.type==this.type && n.label.equals(this.label);
 			}else{
-				return n.type==this.type && n.pos == this.pos && n.label.equals(this.label);
+				return n.type==this.type
+						&& n.pos == this.pos && n.length == this.length
+						&& n.label.equals(this.label);
 			}
 		}
 		return false;
