@@ -1,22 +1,16 @@
 package main;
 
 import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.eclipse.core.runtime.CoreException;
 
-import com.google.common.base.Charsets;
-import com.google.common.io.CharStreams;
-
 import hk.ust.cse.pishon.esgen.model.Change;
 import hk.ust.cse.pishon.esgen.model.EditOp;
 import hk.ust.cse.pishon.esgen.model.EditScript;
-import model.Node;
-import model.NodeEdit;
+import model.ESNode;
+import model.ESNodeEdit;
 import model.TreeEdit;
 import util.CodeHandler;
 import util.FileHandler;
@@ -34,19 +28,19 @@ public class ImportChanges {
 		List<Change> changes = FileHandler.readChanges(files);
 		System.out.println("Total "+changes.size()+" Changes.");
 		ScriptConverter converter = new ScriptConverter();
-		List<Node> oldNodes = null;
-		List<Node> newNodes = null;
+		List<ESNode> oldNodes = null;
+		List<ESNode> newNodes = null;
 
 		for(Change change : changes){
 			try {
-				String oldCode = convertToString(change.getOldFile().getContents());
-				String newCode = convertToString(change.getNewFile().getContents());
+				String oldCode = FileHandler.convertToString(change.getOldFile().getContents());
+				String newCode = FileHandler.convertToString(change.getNewFile().getContents());
 				String changeName = change.getName();
 				System.out.println(changeName);
 				oldNodes = CodeHandler.parse(oldCode);
 				newNodes = CodeHandler.parse(newCode);
 				EditScript editScript = change.getScript();
-				List<NodeEdit> nodeEdits = new ArrayList<>();
+				List<ESNodeEdit> nodeEdits = new ArrayList<>();
 				for(EditOp op : editScript.getEditOps()) {
 					nodeEdits.addAll(converter.convert(op, oldNodes, newNodes));
 				}
@@ -67,16 +61,6 @@ public class ImportChanges {
 				e.printStackTrace();
 			}
 		}
-	}
-
-	private static String convertToString(InputStream is){
-		String content = null;
-		try {
-			content = CharStreams.toString(new InputStreamReader(is, Charsets.UTF_8));
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		return content;
 	}
 
 }

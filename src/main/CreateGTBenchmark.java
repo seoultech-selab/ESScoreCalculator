@@ -26,7 +26,7 @@ import com.google.common.io.CharStreams;
 
 import hk.ust.cse.pishon.esgen.model.Change;
 import model.Benchmark;
-import model.Node;
+import model.ESNode;
 import model.Script;
 import tree.GTNodeVisitor;
 import util.ScriptConverter;
@@ -47,8 +47,8 @@ public class CreateGTBenchmark {
 		List<Change> changes = readChanges(files);
 		System.out.println("Total "+changes.size()+" Changes.");
 		ScriptConverter converter = new ScriptConverter();
-		List<Node> oldNodes = null;
-		List<Node> newNodes = null;
+		List<ESNode> oldNodes = null;
+		List<ESNode> newNodes = null;
 		for(Change change : changes){
 			try {
 				String oldCode = convertToString(change.getOldFile().getContents());
@@ -137,8 +137,8 @@ public class CreateGTBenchmark {
 		return content;
 	}
 
-	private static List<Node> parse(String content) {
-		List<Node> nodes = new ArrayList<>();
+	private static List<ESNode> parse(String content) {
+		List<ESNode> nodes = new ArrayList<>();
 		CompilationUnit cu = getCompilationUnit(content);
 		GTNodeVisitor visitor = new GTNodeVisitor();
 		cu.accept(visitor);

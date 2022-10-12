@@ -4,12 +4,12 @@ import java.util.List;
 
 import hk.ust.cse.pishon.esgen.model.EditOp;
 import hk.ust.cse.pishon.esgen.model.EditScript;
-import model.Node;
-import model.NodeEdit;
+import model.ESNode;
+import model.ESNodeEdit;
 
 public interface ConvertScript {
 
-	public abstract model.Script convert(EditScript script, List<Node> oldNodes, List<Node> newNodes);
-	public abstract List<NodeEdit> convert(EditOp op, List<Node> oldNodes, List<Node> newNodes);
+	public abstract model.Script convert(EditScript script, List<ESNode> oldNodes, List<ESNode> newNodes);
+	public abstract List<ESNodeEdit> convert(EditOp op, List<ESNode> oldNodes, List<ESNode> newNodes);
 
 }

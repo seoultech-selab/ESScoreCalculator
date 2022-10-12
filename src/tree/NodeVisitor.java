@@ -24,21 +24,21 @@ import org.eclipse.jdt.core.dom.StringLiteral;
 import org.eclipse.jdt.core.dom.SwitchCase;
 import org.eclipse.jdt.core.dom.SwitchStatement;
 
-import model.Node;
+import model.ESNode;
 
 public class NodeVisitor extends ASTVisitor {
 
 	private static final boolean ENABLE_GUMTREE_AST =  System.getProperty("las.enable.gumtree.ast") == null ? false : Boolean.parseBoolean(System.getProperty("las.enable.gumtree.ast"));
-	private Stack<Node> nodeStack;
-	private Node root;
-	public List<Node> nodes;
+	private Stack<ESNode> nodeStack;
+	private ESNode root;
+	public List<ESNode> nodes;
 	private boolean parsingSwitchCase = false;
 
 	public NodeVisitor(){
-		root = new Node("root", -1, -1, -1);
-		this.nodeStack = new Stack<Node>();
+		root = new ESNode("root", -1, -1, -1);
+		this.nodeStack = new Stack<ESNode>();
 		this.nodeStack.add(root);
-		this.nodes = new ArrayList<Node>();
+		this.nodes = new ArrayList<ESNode>();
 	}
 
 	@Override
@@ -46,7 +46,7 @@ public class NodeVisitor extends ASTVisitor {
 		if(ENABLE_GUMTREE_AST ||
 				!(node instanceof ExpressionStatement)){
 			//Put statements next to a switch case under the switch case.
-			Node currentNode = nodeStack.pop();
+			ESNode currentNode = nodeStack.pop();
 			if(!ENABLE_GUMTREE_AST){
 				if(node instanceof SwitchCase){
 					//Push again to attach statements next to the switch case.
@@ -65,7 +65,7 @@ public class NodeVisitor extends ASTVisitor {
 		//Ignore ExpressionStatement.
 		if(ENABLE_GUMTREE_AST ||
 				!(node instanceof ExpressionStatement)){
-			Node treeNode = getNode(node);
+			ESNode treeNode = getNode(node);
 			//If currently a switch case is being parsed, and node is a new switch case, move to next.
 			if(!ENABLE_GUMTREE_AST && node instanceof SwitchCase){
 				if(parsingSwitchCase)
@@ -99,8 +99,8 @@ public class NodeVisitor extends ASTVisitor {
 		return false;
 	}
 
-	private Node getNode(ASTNode node) {
-		Node treeNode = new Node(getLabel(node), node);
+	private ESNode getNode(ASTNode node) {
+		ESNode treeNode = new ESNode(getLabel(node), node);
 		if(!nodeStack.isEmpty()){
 			nodeStack.peek().addChild(treeNode);
 		}

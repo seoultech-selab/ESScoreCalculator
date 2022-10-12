@@ -10,13 +10,13 @@ import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.ASTParser;
 import org.eclipse.jdt.core.dom.CompilationUnit;
 
-import model.Node;
+import model.ESNode;
 import tree.NodeVisitor;
 
 public class CodeHandler {
 
-	public static List<Node> parse(String content) {
-		List<Node> nodes = new ArrayList<>();
+	public static List<ESNode> parse(String content) {
+		List<ESNode> nodes = new ArrayList<>();
 		CompilationUnit cu = CodeHandler.getCompilationUnit(content);
 		NodeVisitor visitor = new NodeVisitor();
 		cu.accept(visitor);
@@ -36,7 +36,7 @@ public class CodeHandler {
 		return cu;
 	}
 
-	public static String getEntityType(Node node) {
+	public static String getEntityType(ESNode node) {
 		String nodeType = "";
 		try {
 			nodeType = ASTNode.nodeClassForType(node.type).getSimpleName();

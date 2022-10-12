@@ -5,7 +5,7 @@ import com.google.common.collect.Multiset;
 import com.google.common.collect.Multisets;
 
 import model.Benchmark;
-import model.NodeEdit;
+import model.ESNodeEdit;
 import model.Score;
 import model.Script;
 
@@ -99,9 +99,9 @@ public class ScoreCalculator {
 	}
 
 	public double computeSimilarity(Script script1, Script script2) {
-		Multiset<NodeEdit> edit1 = HashMultiset.create(script1.editOps);
-		Multiset<NodeEdit> edit2 = HashMultiset.create(script2.editOps);
-		Multiset<NodeEdit> intersection = Multisets.intersection(edit1, edit2);
+		Multiset<ESNodeEdit> edit1 = HashMultiset.create(script1.editOps);
+		Multiset<ESNodeEdit> edit2 = HashMultiset.create(script2.editOps);
+		Multiset<ESNodeEdit> intersection = Multisets.intersection(edit1, edit2);
 		int sum = edit1.size() + edit2.size();
 		System.out.println("Inter:"+intersection.size());
 

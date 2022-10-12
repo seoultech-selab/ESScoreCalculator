@@ -6,18 +6,18 @@ import java.util.List;
 
 import org.eclipse.jdt.core.dom.ASTNode;
 
-public class Node implements Serializable {
+public class ESNode implements Serializable {
 
 	private static final long serialVersionUID = -721628405080048569L;
 	public int type;
 	public int pos;
 	public int length;
 	public String label;
-	public Node parent;
-	public List<Node> children;
+	public ESNode parent;
+	public List<ESNode> children;
 	public int posInParent;
 
-	public Node(String label, int type, int pos, int length) {
+	public ESNode(String label, int type, int pos, int length) {
 		super();
 		this.type = type;
 		this.pos = pos;
@@ -28,11 +28,11 @@ public class Node implements Serializable {
 		this.posInParent = -1;
 	}
 
-	public Node(String label, ASTNode node) {
+	public ESNode(String label, ASTNode node) {
 		this(label, node.getNodeType(), node.getStartPosition(), node.getLength());
 	}
 
-	public void addChild(Node node){
+	public void addChild(ESNode node){
 		node.parent = this;
 		node.posInParent = children.size();
 		children.add(node);
@@ -40,8 +40,8 @@ public class Node implements Serializable {
 
 	@Override
 	public boolean equals(Object obj) {
-		if(obj instanceof Node){
-			Node n = (Node)obj;
+		if(obj instanceof ESNode){
+			ESNode n = (ESNode)obj;
 			if(this.pos == -1 || n.pos == -1){
 				//Handling GumTree Update operations without node information.
 				return n.type==this.type && n.label.equals(this.label);

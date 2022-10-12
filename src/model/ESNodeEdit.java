@@ -2,7 +2,7 @@ package model;
 
 import java.io.Serializable;
 
-public class NodeEdit implements Serializable {
+public class ESNodeEdit implements Serializable {
 
 	private static final long serialVersionUID = -1231598966718602060L;
 	public static final String OP_INSERT = "Insert";
@@ -10,11 +10,11 @@ public class NodeEdit implements Serializable {
 	public static final String OP_MOVE = "Move";
 	public static final String OP_UPDATE = "Update";
 	public String type;
-	public Node node;
-	public Node location;
+	public ESNode node;
+	public ESNode location;
 	public int position;
 
-	public NodeEdit(String type, Node node, Node location, int position) {
+	public ESNodeEdit(String type, ESNode node, ESNode location, int position) {
 		super();
 		this.type = type;
 		this.node = node;
@@ -24,8 +24,8 @@ public class NodeEdit implements Serializable {
 
 	@Override
 	public boolean equals(Object obj) {
-		if(obj instanceof NodeEdit){
-			NodeEdit edit = (NodeEdit)obj;
+		if(obj instanceof ESNodeEdit){
+			ESNodeEdit edit = (ESNodeEdit)obj;
 			return edit.type.equals(this.type)
 					&& edit.node.equals(this.node)
 					&& edit.location.equals(this.location)

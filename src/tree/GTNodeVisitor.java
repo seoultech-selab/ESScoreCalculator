@@ -19,18 +19,18 @@ import org.eclipse.jdt.core.dom.QualifiedName;
 import org.eclipse.jdt.core.dom.StringLiteral;
 import org.eclipse.jdt.core.dom.Type;
 
-import model.Node;
+import model.ESNode;
 
 public class GTNodeVisitor extends ASTVisitor {
-	private Stack<Node> nodeStack;
-	private Node root;
-	public List<Node> nodes;
+	private Stack<ESNode> nodeStack;
+	private ESNode root;
+	public List<ESNode> nodes;
 
 	public GTNodeVisitor(){
-		root = new Node("root", -1, -1, -1);
-		this.nodeStack = new Stack<Node>();
+		root = new ESNode("root", -1, -1, -1);
+		this.nodeStack = new Stack<ESNode>();
 		this.nodeStack.add(root);
-		this.nodes = new ArrayList<Node>();
+		this.nodes = new ArrayList<ESNode>();
 	}
 
 	@Override
@@ -40,7 +40,7 @@ public class GTNodeVisitor extends ASTVisitor {
 
 	@Override
 	public void preVisit(ASTNode node) {
-		Node treeNode = getNode(node);
+		ESNode treeNode = getNode(node);
 		nodeStack.push(treeNode);
 		nodes.add(treeNode);
 	}
@@ -50,8 +50,8 @@ public class GTNodeVisitor extends ASTVisitor {
 		return false;
 	}
 
-	private Node getNode(ASTNode node) {
-		Node treeNode = new Node(getLabel(node), node);
+	private ESNode getNode(ASTNode node) {
+		ESNode treeNode = new ESNode(getLabel(node), node);
 		if(!nodeStack.isEmpty()){
 			nodeStack.peek().addChild(treeNode);
 		}

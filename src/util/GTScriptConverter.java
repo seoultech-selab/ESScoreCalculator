@@ -9,8 +9,8 @@ import com.github.gumtreediff.actions.model.Move;
 import com.github.gumtreediff.actions.model.Update;
 import com.github.gumtreediff.tree.ITree;
 
-import model.Node;
-import model.NodeEdit;
+import model.ESNode;
+import model.ESNodeEdit;
 import model.Script;
 
 public class GTScriptConverter {
@@ -23,33 +23,33 @@ public class GTScriptConverter {
 		return convertedScript;
 	}
 
-	private static NodeEdit convert(Action op) {
-		Node node = convertNode(op.getNode());
-		NodeEdit edit = null;
+	private static ESNodeEdit convert(Action op) {
+		ESNode node = convertNode(op.getNode());
+		ESNodeEdit edit = null;
 		if(op instanceof Insert){
 			Insert insert = (Insert)op;
-			Node location = convertNode(insert.getParent());
-			edit = new NodeEdit(NodeEdit.OP_INSERT, node, location, insert.getPosition());
+			ESNode location = convertNode(insert.getParent());
+			edit = new ESNodeEdit(ESNodeEdit.OP_INSERT, node, location, insert.getPosition());
 		}else if(op instanceof Delete){
-			Node location = convertNode(op.getNode().getParent());
-			edit = new NodeEdit(NodeEdit.OP_DELETE, node, location, op.getNode().positionInParent());
+			ESNode location = convertNode(op.getNode().getParent());
+			edit = new ESNodeEdit(ESNodeEdit.OP_DELETE, node, location, op.getNode().positionInParent());
 		}else if(op instanceof Update){
 			Update update = (Update)op;
 			//Make a fake node with the updated value of this operation.
-			Node location = convertNode(op.getNode());
+			ESNode location = convertNode(op.getNode());
 			location.label = update.getValue();
 			location.pos = -1;
 			location.length = -1;
-			edit = new NodeEdit(NodeEdit.OP_UPDATE, node, location, -1);
+			edit = new ESNodeEdit(ESNodeEdit.OP_UPDATE, node, location, -1);
 		}else if(op instanceof Move){
 			Move move = (Move)op;
-			Node location = convertNode(move.getParent());
-			edit = new NodeEdit(NodeEdit.OP_MOVE, node, location, move.getPosition());
+			ESNode location = convertNode(move.getParent());
+			edit = new ESNodeEdit(ESNodeEdit.OP_MOVE, node, location, move.getPosition());
 		}
 		return edit;
 	}
 
-	private static Node convertNode(ITree node) {
-		return new Node(node.getLabel(), node.getType(), node.getPos(), node.getLength());
+	private static ESNode convertNode(ITree node) {
+		return new ESNode(node.getLabel(), node.getType(), node.getPos(), node.getLength());
 	}
 }
