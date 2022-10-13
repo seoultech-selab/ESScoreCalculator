@@ -30,7 +30,7 @@ public class ExportScriptInfo {
 	public static void main(String[] args) {
 		String basePath = "scripts_grouped";
 		String changeListRefFile = "scripts/scripts1/changes.obj";
-		String groupListRefFile = basePath + "/groups.csv";
+		String groupListRefFile = basePath + File.separator + "groups.csv";
 
 		System.setProperty("las.enable.gumtree.ast", "false");
 
@@ -79,7 +79,6 @@ public class ExportScriptInfo {
 				scripts.put(changeName, map);
 				Node n = item.get(changeName);
 				HashMap<List<EditOp>, Integer> uniqScripts = new HashMap<>();
-
 				//Scripts.
 				for(Node c : n.children) {
 					EditScript script = new EditScript();
@@ -161,8 +160,8 @@ public class ExportScriptInfo {
 				}
 			}
 		}
-		FileHandler.storeContent("scripts_grouped/edit_scripts_text.csv", sbText.toString());
-		FileHandler.storeContent("scripts_grouped/edit_scripts_ctet.csv", sb.toString());
+		FileHandler.storeContent(basePath + File.separator + "edit_scripts_text.csv", sbText.toString());
+		FileHandler.storeContent(basePath + File.separator + "edit_scripts_ctet.csv", sb.toString());
 		sb = new StringBuffer("change,group");
 		System.out.println("changes:"+groups.size());
 		int majority = 0;
@@ -175,7 +174,7 @@ public class ExportScriptInfo {
 				majority++;
 		}
 		System.out.println("Changes w/ Majority Scripts:"+majority);
-		FileHandler.storeContent("change_groups.csv", sb.toString());
+		FileHandler.storeContent(basePath + File.separator + "change_groups.csv", sb.toString());
 	}
 
 }
