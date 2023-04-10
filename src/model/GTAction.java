@@ -24,16 +24,16 @@ public class GTAction {
 	public GTAction(Action action){
 		this.action = action;
 		this.actionType = getActionType(action);
-		this.codeType = ASTNode.nodeClassForType(action.getNode().getType()).getSimpleName();;
-		this.children = new ArrayList<GTAction>();
+		this.codeType = action.getNode().getType().name;
+		this.children = new ArrayList<>();
 		this.charStr = "";
 	}
 
 	public GTAction(Action action, CompilationUnit srcCu, CompilationUnit dstCu){
 		this.action = action;
 		this.actionType = getActionType(action);
-		this.codeType = ASTNode.nodeClassForType(action.getNode().getType()).getSimpleName();;
-		this.children = new ArrayList<GTAction>();
+		this.codeType = action.getNode().getType().name;
+		this.children = new ArrayList<>();
 		setCharStr(srcCu, dstCu);
 	}
 
@@ -41,7 +41,7 @@ public class GTAction {
 		StringBuffer sb = new StringBuffer();
 		sb.append(actionType);
 		sb.append("\t");
-		sb.append(convertNodeType(action.getNode().toShortString()));
+		sb.append(convertNodeType(action.getNode().toTreeString()));
 		sb.append("[");
 		if(actionType.equals("INS")){
 			sb.append(dstCu.getLineNumber(action.getNode().getPos()));
@@ -52,14 +52,14 @@ public class GTAction {
 		if(actionType.equals("MOV")){
 			Move move = (Move)action;
 			sb.append("\tTO\t");
-			sb.append(convertNodeType(move.getParent().toShortString()));
+			sb.append(convertNodeType(move.getParent().toTreeString()));
 			sb.append("[");
 			sb.append(srcCu.getLineNumber(move.getParent().getPos()));
 			sb.append("]");
 		}else if(actionType.equals("INS")){
 			Insert insert = (Insert)action;
 			sb.append("\tTO\t");
-			sb.append(convertNodeType(insert.getParent().toShortString()));
+			sb.append(convertNodeType(insert.getParent().toTreeString()));
 			sb.append("[");
 			sb.append(srcCu.getLineNumber(insert.getParent().getPos()));
 			sb.append("]");

@@ -9,7 +9,7 @@ import org.eclipse.jdt.core.dom.ASTNode;
 public class ESNode implements Serializable {
 
 	private static final long serialVersionUID = -721628405080048569L;
-	public int type;
+	public String type;
 	public int pos;
 	public int length;
 	public String label;
@@ -17,7 +17,7 @@ public class ESNode implements Serializable {
 	public List<ESNode> children;
 	public int posInParent;
 
-	public ESNode(String label, int type, int pos, int length) {
+	public ESNode(String label, String type, int pos, int length) {
 		super();
 		this.type = type;
 		this.pos = pos;
@@ -29,7 +29,7 @@ public class ESNode implements Serializable {
 	}
 
 	public ESNode(String label, ASTNode node) {
-		this(label, node.getNodeType(), node.getStartPosition(), node.getLength());
+		this(label, ASTNode.nodeClassForType(node.getNodeType()).getSimpleName(), node.getStartPosition(), node.getLength());
 	}
 
 	public void addChild(ESNode node){
@@ -62,6 +62,6 @@ public class ESNode implements Serializable {
 
 	@Override
 	public String toString(){
-		return "[" + label + "|" + ASTNode.nodeClassForType(type).getSimpleName() + "|" + pos + "|" + length + "]";
+		return String.join("", "[", label, "|", type, "|", String.valueOf(pos), "|", String.valueOf(length), "]");
 	}
 }

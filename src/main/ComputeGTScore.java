@@ -16,14 +16,15 @@ import java.util.regex.Pattern;
 
 import org.eclipse.jdt.core.dom.ASTNode;
 
-import com.github.gumtreediff.actions.ActionGenerator;
+import com.github.gumtreediff.actions.EditScriptGenerator;
+import com.github.gumtreediff.actions.SimplifiedChawatheScriptGenerator;
 import com.github.gumtreediff.actions.model.Action;
 import com.github.gumtreediff.actions.model.Insert;
-import com.github.gumtreediff.client.Run;
-import com.github.gumtreediff.gen.Generators;
+import com.github.gumtreediff.gen.jdt.JdtTreeGenerator;
+import com.github.gumtreediff.matchers.MappingStore;
 import com.github.gumtreediff.matchers.Matcher;
 import com.github.gumtreediff.matchers.Matchers;
-import com.github.gumtreediff.tree.ITree;
+import com.github.gumtreediff.tree.Tree;
 
 import model.Benchmark;
 import model.Score;
@@ -44,19 +45,18 @@ public class ComputeGTScore {
 				File srcFile = getFile(changeName, "old");
 				File dstFile = getFile(changeName, "new");
 				List<Action> actions = null;
-				Run.initGenerators();
-				ITree src = Generators.getInstance().getTree(srcFile.getAbsolutePath()).getRoot();
-				ITree dst = Generators.getInstance().getTree(dstFile.getAbsolutePath()).getRoot();
-				Matcher m = Matchers.getInstance().getMatcher(src, dst); // retrieve the default matcher
-				m.match();
-				ActionGenerator g = new ActionGenerator(src, dst, m.getMappings());
-				g.generate();
-				actions = g.getActions();
+				Tree src = new JdtTreeGenerator().generateFrom().file(srcFile.getAbsolutePath()).getRoot();
+				Tree dst = new JdtTreeGenerator().generateFrom().file(dstFile.getAbsolutePath()).getRoot();
+				Matcher m = Matchers.getInstance().getMatcher();
+				MappingStore mappings = m.match(src, dst);
+				EditScriptGenerator g = new SimplifiedChawatheScriptGenerator();
+				com.github.gumtreediff.actions.EditScript gtscript = g.computeActions(mappings);
+				actions = gtscript.asList();
 				List<Action> convertedActions = new ArrayList<>();
 				for(Action action : actions){
 					if(action instanceof Insert){
 						Insert insert = (Insert)action;
-						ITree newParent = insert.getNode().getParent();
+						Tree newParent = insert.getNode().getParent();
 						Insert newInsert = new Insert(insert.getNode(), newParent, insert.getNode().positionInParent());
 						convertedActions.add(newInsert);
 					}else{

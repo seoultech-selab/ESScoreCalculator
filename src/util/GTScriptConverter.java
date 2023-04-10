@@ -7,7 +7,7 @@ import com.github.gumtreediff.actions.model.Delete;
 import com.github.gumtreediff.actions.model.Insert;
 import com.github.gumtreediff.actions.model.Move;
 import com.github.gumtreediff.actions.model.Update;
-import com.github.gumtreediff.tree.ITree;
+import com.github.gumtreediff.tree.Tree;
 
 import model.ESNode;
 import model.ESNodeEdit;
@@ -49,7 +49,7 @@ public class GTScriptConverter {
 		return edit;
 	}
 
-	private static ESNode convertNode(ITree node) {
-		return new ESNode(node.getLabel(), node.getType(), node.getPos(), node.getLength());
+	private static ESNode convertNode(Tree node) {
+		return new ESNode(node.getLabel(), node.getType().name, node.getPos(), node.getLength());
 	}
 }

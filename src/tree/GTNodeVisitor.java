@@ -27,10 +27,10 @@ public class GTNodeVisitor extends ASTVisitor {
 	public List<ESNode> nodes;
 
 	public GTNodeVisitor(){
-		root = new ESNode("root", -1, -1, -1);
-		this.nodeStack = new Stack<ESNode>();
+		root = new ESNode("root", null, -1, -1);
+		this.nodeStack = new Stack<>();
 		this.nodeStack.add(root);
-		this.nodes = new ArrayList<ESNode>();
+		this.nodes = new ArrayList<>();
 	}
 
 	@Override

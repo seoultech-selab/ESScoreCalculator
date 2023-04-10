@@ -153,7 +153,7 @@ public class ScriptConverter implements ConvertScript {
 		do {
 			p = null;
 			pNode = root.nodeEdit.location;
-			if(pNode != null && pNode.type != -1) {
+			if(pNode != null && pNode.type != null) {
 				for(ESNodeEdit e : edits) {
 					if(pNode.equals(e.node) && e.type.equals(r.type)) {
 						p = new TreeEdit(e);

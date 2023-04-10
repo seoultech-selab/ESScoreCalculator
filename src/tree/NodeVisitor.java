@@ -35,10 +35,10 @@ public class NodeVisitor extends ASTVisitor {
 	private boolean parsingSwitchCase = false;
 
 	public NodeVisitor(){
-		root = new ESNode("root", -1, -1, -1);
-		this.nodeStack = new Stack<ESNode>();
+		root = new ESNode("root", null, -1, -1);
+		this.nodeStack = new Stack<>();
 		this.nodeStack.add(root);
-		this.nodes = new ArrayList<ESNode>();
+		this.nodes = new ArrayList<>();
 	}
 
 	@Override
