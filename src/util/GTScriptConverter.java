@@ -1,12 +1,17 @@
 package util;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import com.github.gumtreediff.actions.model.Action;
 import com.github.gumtreediff.actions.model.Delete;
 import com.github.gumtreediff.actions.model.Insert;
 import com.github.gumtreediff.actions.model.Move;
+import com.github.gumtreediff.actions.model.TreeAction;
+import com.github.gumtreediff.actions.model.TreeDelete;
+import com.github.gumtreediff.actions.model.TreeInsert;
 import com.github.gumtreediff.actions.model.Update;
+import com.github.gumtreediff.matchers.MappingStore;
 import com.github.gumtreediff.tree.Tree;
 
 import model.ESNode;
@@ -15,15 +20,61 @@ import model.Script;
 
 public class GTScriptConverter {
 
-	public static Script convert(List<Action> script){
+	public static Script convert(List<Action> script, MappingStore mappings){
 		Script convertedScript = new Script();
 		for(Action op : script){
-			convertedScript.editOps.add(convert(op));
+			//Ignore import declaration related changes.
+			if("ImportDeclaration".equals(op.getNode().getType().name)
+					|| "ImportDeclaration".equals(op.getNode().getParent().getType().name))
+				continue;
+			if(op instanceof TreeAction) {
+				List<ESNodeEdit> edits = convertTreeOp((TreeAction)op, mappings);
+				convertedScript.editOps.addAll(edits);
+			} else {
+				ESNodeEdit edit = convert(op, mappings);
+				convertedScript.editOps.add(edit);
+			}
 		}
 		return convertedScript;
 	}
 
-	private static ESNodeEdit convert(Action op) {
+	private static List<ESNodeEdit> convertTreeOp(TreeAction op, MappingStore mappings) {
+		List<ESNodeEdit> edits = new ArrayList<>();
+		List<ESNode> nodes = new ArrayList<>();
+		Tree n = op.getNode();
+		ESNode node = convert(n, nodes);
+		if(op instanceof TreeInsert) {
+			TreeInsert insert = ((TreeInsert) op);
+			Tree p = insert.getParent();
+			ESNode location = convertNode(p);
+			ESNodeEdit edit = new ESNodeEdit(ESNodeEdit.OP_INSERT, node, location, insert.getPosition());
+			edits.add(edit);
+			for(ESNode c : nodes.subList(1, nodes.size())) {
+				edit = new ESNodeEdit(ESNodeEdit.OP_INSERT, c, c.parent, c.posInParent);
+				edits.add(edit);
+			}
+		} else if (op instanceof TreeDelete) {
+			ESNode location = convertNode(n.getParent());
+			ESNodeEdit edit = new ESNodeEdit(ESNodeEdit.OP_DELETE, node, location, node.posInParent);
+			edits.add(edit);
+			for(ESNode c : nodes.subList(1, nodes.size())) {
+				edit = new ESNodeEdit(ESNodeEdit.OP_DELETE, c, c.parent, c.posInParent);
+				edits.add(edit);
+			}
+		}
+		return edits;
+	}
+
+	public static ESNode convert(Tree n, List<ESNode> nodes) {
+		ESNode node = GTScriptConverter.convertNode(n);
+		nodes.add(node);
+		for(Tree c : n.getChildren()) {
+			node.addChild(convert(c, nodes));
+		}
+		return node;
+	}
+
+	private static ESNodeEdit convert(Action op, MappingStore mappings) {
 		ESNode node = convertNode(op.getNode());
 		ESNodeEdit edit = null;
 		if(op instanceof Insert){
@@ -34,12 +85,8 @@ public class GTScriptConverter {
 			ESNode location = convertNode(op.getNode().getParent());
 			edit = new ESNodeEdit(ESNodeEdit.OP_DELETE, node, location, op.getNode().positionInParent());
 		}else if(op instanceof Update){
-			Update update = (Update)op;
 			//Make a fake node with the updated value of this operation.
-			ESNode location = convertNode(op.getNode());
-			location.label = update.getValue();
-			location.pos = -1;
-			location.length = -1;
+			ESNode location = convertNode(mappings.getDstForSrc(op.getNode()));
 			edit = new ESNodeEdit(ESNodeEdit.OP_UPDATE, node, location, -1);
 		}else if(op instanceof Move){
 			Move move = (Move)op;
@@ -49,7 +96,7 @@ public class GTScriptConverter {
 		return edit;
 	}
 
-	private static ESNode convertNode(Tree node) {
+	public static ESNode convertNode(Tree node) {
 		return new ESNode(node.getLabel(), node.getType().name, node.getPos(), node.getLength());
 	}
 }

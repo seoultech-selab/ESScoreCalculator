@@ -63,7 +63,7 @@ public class ComputeGTScore {
 						convertedActions.add(action);
 					}
 				}
-				Script script = GTScriptConverter.convert(convertedActions);
+				Script script = GTScriptConverter.convert(convertedActions, mappings);
 				scores.put(changeName, calculator.getBestMatchScore(changeName, script));
 				Score score = scores.get(changeName);
 				System.out.println("Change - "+changeName);

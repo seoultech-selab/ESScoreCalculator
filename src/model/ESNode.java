@@ -44,9 +44,9 @@ public class ESNode implements Serializable {
 			ESNode n = (ESNode)obj;
 			if(this.pos == -1 || n.pos == -1){
 				//Handling GumTree Update operations without node information.
-				return n.type==this.type && n.label.equals(this.label);
+				return n.type != null && n.type.equals(this.type) && n.label.equals(this.label);
 			}else{
-				return n.type==this.type
+				return n.type != null && n.type.equals(this.type)
 						&& n.pos == this.pos && n.length == this.length
 						&& n.label.equals(this.label);
 			}

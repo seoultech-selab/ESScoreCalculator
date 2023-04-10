@@ -12,17 +12,89 @@ import tree.TreeNode;
 
 public class ScriptConverter implements ConvertScript {
 
+	public static final String TREE_TYPE_LAS = "LAS";
+	public static final String TREE_TYPE_GT = "GumTree";
+
 	@Override
 	public model.Script convert(EditScript script, List<ESNode> oldNodes, List<ESNode> newNodes){
-		model.Script converted = new model.Script(script.toString());
+		return convert(script, oldNodes, newNodes, TREE_TYPE_LAS);
+	}
+
+	@Override
+	public model.Script convert(EditScript script, List<ESNode> oldNodes, List<ESNode> newNodes, String treeType){
+		model.Script converted = new model.Script(toTextScript(script));
 		for(EditOp op : script.getEditOps()){
-			converted.editOps.addAll(convert(op, oldNodes, newNodes));
+			converted.editOps.addAll(convert(op, oldNodes, newNodes, treeType));
 		}
 		return converted;
 	}
 
+	private String toTextScript(EditScript script) {
+		List<EditOp> editOps = script.getEditOps();
+		if (editOps.size() > 0) {
+			StringBuffer sb = new StringBuffer();
+			for (EditOp op : editOps) {
+				sb.append("\n\n");
+				sb.append(toOpString(op));
+			}
+			return sb.toString().substring(2);
+		}else{
+			return "";
+		}
+	}
+
+	private String toOpString(EditOp op) {
+		StringBuffer sb = new StringBuffer();
+		String type = op.getType();
+		sb.append(type);
+		sb.append("\t");
+		if(type.equals(EditOp.OP_INSERT)){
+			sb.append(op.getNewCode());
+			sb.append(" (Line ");
+			sb.append(op.getNewStartLine());
+			sb.append(")[");
+			sb.append(op.getNewStartPos());
+			sb.append(",");
+			sb.append(op.getNewLength());
+			sb.append("]");
+		}else if(type.equals(EditOp.OP_DELETE)){
+			sb.append(op.getOldCode());
+			sb.append(" (Line ");
+			sb.append(op.getOldStartLine());
+			sb.append(")[");
+			sb.append(op.getOldStartPos());
+			sb.append(",");
+			sb.append(op.getOldLength());
+			sb.append("]");
+		}else{
+			sb.append(op.getOldCode());
+			sb.append(" (Line ");
+			sb.append(op.getOldStartLine());
+			sb.append(")[");
+			sb.append(op.getOldStartPos());
+			sb.append(",");
+			sb.append(op.getOldLength());
+			sb.append("]\n");
+			sb.append("to\t");
+			sb.append(op.getNewCode());
+			sb.append(" (Line ");
+			sb.append(op.getNewStartLine());
+			sb.append(")[");
+			sb.append(op.getNewStartPos());
+			sb.append(",");
+			sb.append(op.getNewLength());
+			sb.append("]");
+		}
+		return sb.toString();
+	}
+
 	@Override
 	public List<ESNodeEdit> convert(EditOp op, List<ESNode> oldNodes, List<ESNode> newNodes) {
+		return convert(op, oldNodes, newNodes, TREE_TYPE_LAS);
+	}
+
+	@Override
+	public List<ESNodeEdit> convert(EditOp op, List<ESNode> oldNodes, List<ESNode> newNodes, String treeType) {
 		List<ESNodeEdit> edits = new ArrayList<>();
 		List<ESNode> nodes = null;
 		int oldStart = op.getOldStartPos();
@@ -59,8 +131,8 @@ public class ScriptConverter implements ConvertScript {
 			newNode = findSubtreeRoot(newNodes, newStart, newEnd);
 			if(node != null && newNode != null){
 				//For Update operation, all nodes should have values.
-				if(node.type == newNode.type &&
-						checkNode(node) && checkNode(newNode)){
+				if(node.type != null && node.type.equals(newNode.type)
+						&& checkNode(node, treeType) && checkNode(newNode, treeType)){
 					edits.add(new ESNodeEdit(ESNodeEdit.OP_UPDATE, node, newNode, -1));
 				}else{
 					//If not, separate this update to one deletion and one insertion.
@@ -99,8 +171,12 @@ public class ScriptConverter implements ConvertScript {
 		return trim;
 	}
 
-	private boolean checkNode(ESNode node) {
-		return node.label.contains(TreeNode.DELIM);
+	private boolean checkNode(ESNode node, String treeType) {
+		if(TREE_TYPE_LAS.equals(treeType))
+			return node.label.contains(TreeNode.DELIM);
+		else if(TREE_TYPE_GT.equals(treeType))
+			return !"".equals(node.label);
+		return false;
 	}
 
 	protected ESNode findSubtreeRoot(List<ESNode> nodes, int startPos, int endPos) {
@@ -118,17 +194,47 @@ public class ScriptConverter implements ConvertScript {
 	}
 
 	protected List<ESNode> findNodes(List<ESNode> nodes, int startPos, int endPos) {
+		//nodes must be sorted in ascending order of pos.
+		//Find the smallest node contains the entire range.
 		List<ESNode> nodesInRange = new ArrayList<>();
+		ESNode smallest = nodes.get(0);
 		for(int i=0; i<nodes.size(); i++){
 			ESNode node = nodes.get(i);
 			int nodeEnd = node.pos + node.length;
-			if((node.pos >= startPos && node.pos <= endPos) || (nodeEnd >= startPos && nodeEnd <= endPos)){
-				nodesInRange.add(node);
-			}else if(node.pos > endPos){
+			if(includeRange(node, startPos, endPos)) {
+				if(includeRange(smallest, node.pos, nodeEnd)) {
+					smallest = node;
+					System.out.println(node);
+				}
+			} else if (node.pos > endPos){
 				break;
 			}
 		}
+
+		//Then include descendants within range.
+		nodesInRange.add(smallest);
+		findNodes(smallest, nodesInRange, startPos, endPos);
+
 		return nodesInRange;
+	}
+
+	protected void findNodes(ESNode n, List<ESNode> nodesInRange, int startPos, int endPos) {
+		for(ESNode c : n.children) {
+			if(hasOverlap(c, startPos, endPos)) {
+				nodesInRange.add(c);
+				findNodes(c, nodesInRange, startPos, endPos);
+			}
+		}
+	}
+
+	private boolean hasOverlap(ESNode n, int startPos, int endPos) {
+		int nodeEnd = n.pos + n.length;
+		return (n.pos >= startPos && n.pos <= endPos)
+				|| (nodeEnd <= startPos && nodeEnd >= endPos);
+	}
+
+	private boolean includeRange(ESNode n, int startPos, int endPos) {
+		return n.pos <= startPos && n.pos + n.length >= endPos;
 	}
 
 	public List<TreeEdit> groupSubtrees(List<ESNodeEdit> nodeEdits) {

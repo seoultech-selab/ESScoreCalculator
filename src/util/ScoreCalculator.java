@@ -80,17 +80,9 @@ public class ScoreCalculator {
 		Multiset<Script> scripts = benchmark.getScripts(changeName);
 		Script bestMatch = null;
 		double highestSimilarity = 0.0d;
-		if(changeName.equals("lucene2")){
-			System.out.println(script);
-			System.out.println("-------------------------");
-		}
 		for(Script s : scripts){
 			double similarity = computeSimilarity(s, script);
-			if(changeName.equals("lucene2")){
-				System.out.println(s);
-				System.out.println("**************************");
-			}
-			if(similarity > highestSimilarity){
+			if(bestMatch == null || similarity > highestSimilarity){
 				bestMatch = s;
 				highestSimilarity = similarity;
 			}
@@ -103,7 +95,6 @@ public class ScoreCalculator {
 		Multiset<ESNodeEdit> edit2 = HashMultiset.create(script2.editOps);
 		Multiset<ESNodeEdit> intersection = Multisets.intersection(edit1, edit2);
 		int sum = edit1.size() + edit2.size();
-		System.out.println("Inter:"+intersection.size());
 
 		return (double)2*intersection.size()/sum;
 	}

@@ -28,7 +28,8 @@ public class ESNodeEdit implements Serializable {
 			ESNodeEdit edit = (ESNodeEdit)obj;
 			return edit.type.equals(this.type)
 					&& edit.node.equals(this.node)
-					&& edit.location.equals(this.location)
+					&& ((edit.location == null && this.location == null)
+							|| edit.location.equals(this.location))
 					&& edit.position == this.position;
 		}
 		return false;
@@ -36,12 +37,14 @@ public class ESNodeEdit implements Serializable {
 
 	@Override
 	public int hashCode(){
-		String s = type + "|" + node.hashCode() + "|" + location.hashCode() + "|" + position;
+		int locationHash = location == null ? -1 : location.hashCode();
+		String s = type + "|" + node.hashCode() + "|" + locationHash + "|" + position;
 		return s.hashCode();
 	}
 
 	@Override
 	public String toString(){
-		return type + "|" + node.toString() + "|" + location.toString() + "|" + position;
+		String strLoc = location == null ? "" : location.toString();
+		return type + "|" + node.toString() + "|" + strLoc + "|" + position;
 	}
 }
