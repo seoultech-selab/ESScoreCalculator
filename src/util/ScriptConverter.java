@@ -122,7 +122,7 @@ public class ScriptConverter implements ConvertScript {
 		case EditOp.OP_MOVE:
 			ESNode node = findSubtreeRoot(oldNodes, oldStart, oldEnd);
 			ESNode newNode = findSubtreeRoot(newNodes, newStart, newEnd);
-			if(node != null && newNode != null){
+			if(node != null && newNode != null && isValid(node)){
 				edits.add(new ESNodeEdit(ESNodeEdit.OP_MOVE, node, newNode.parent, newNode.posInParent));
 			}
 			break;
@@ -131,7 +131,7 @@ public class ScriptConverter implements ConvertScript {
 			newNode = findSubtreeRoot(newNodes, newStart, newEnd);
 			if(node != null && newNode != null){
 				//For Update operation, all nodes should have values.
-				if(node.type != null && node.type.equals(newNode.type)
+				if(node.type != null && node.type.equals(newNode.type) && isValid(node)
 						&& checkNode(node, treeType) && checkNode(newNode, treeType)){
 					edits.add(new ESNodeEdit(ESNodeEdit.OP_UPDATE, node, newNode, -1));
 				}else{
@@ -204,7 +204,6 @@ public class ScriptConverter implements ConvertScript {
 			if(includeRange(node, startPos, endPos)) {
 				if(includeRange(smallest, node.pos, nodeEnd)) {
 					smallest = node;
-					System.out.println(node);
 				}
 			} else if (node.pos > endPos){
 				break;
@@ -212,7 +211,9 @@ public class ScriptConverter implements ConvertScript {
 		}
 
 		//Then include descendants within range.
-		nodesInRange.add(smallest);
+		//Don't add CompilationUnit change which works as the root. This is to remove comment changes.
+		if(!"CompilationUnit".equals(smallest.type) && !"ImportDeclaration".equals(smallest.type))
+			nodesInRange.add(smallest);
 		findNodes(smallest, nodesInRange, startPos, endPos);
 
 		return nodesInRange;
@@ -221,10 +222,26 @@ public class ScriptConverter implements ConvertScript {
 	protected void findNodes(ESNode n, List<ESNode> nodesInRange, int startPos, int endPos) {
 		for(ESNode c : n.children) {
 			if(hasOverlap(c, startPos, endPos)) {
-				nodesInRange.add(c);
-				findNodes(c, nodesInRange, startPos, endPos);
+				if(isValid(c)) {
+					nodesInRange.add(c);
+					findNodes(c, nodesInRange, startPos, endPos);
+				}
 			}
 		}
+	}
+
+	private boolean isValid(ESNode n) {
+		//Remove import declaration related nodes.
+		boolean isValid = true;
+		if(n.type != null) {
+			if(n.type.equals("ImportDeclaration")) {
+				return false;
+			} else if(n.parent != null && n.parent.type != null
+					&& n.parent.type.equals("ImportDeclaration")) {
+				return false;
+			}
+		}
+		return isValid;
 	}
 
 	private boolean hasOverlap(ESNode n, int startPos, int endPos) {

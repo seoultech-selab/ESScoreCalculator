@@ -94,7 +94,7 @@ public class Benchmark implements Serializable {
 		}
 	}
 
-	public int find(String changeName, Script script){
+	public int count(String changeName, Script script){
 		if(items.containsKey(changeName)){
 			return items.get(changeName).count(script);
 		}else{
@@ -102,11 +102,21 @@ public class Benchmark implements Serializable {
 		}
 	}
 
+	public Script find(String changeName, Script script){
+		if(items.containsKey(changeName)){
+			Multiset<Script> scripts = items.get(changeName);
+			for(Script s : scripts.elementSet())
+				if(s != null && s.equals(script))
+					return s;
+		}
+		return null;
+	}
+
 	public Script getMajorScript(String changeName) {
 		if(items.containsKey(changeName)) {
 			Multiset<Script> scripts = items.get(changeName);
 			int total = scripts.size();
-			double majorRatio = total/0.5d;
+			double majorRatio = total*0.5d;
 			for(Entry<Script> e : scripts.entrySet()) {
 				if(Double.compare(e.getCount(), majorRatio) > 0)
 					return e.getElement();
