@@ -20,12 +20,12 @@ import model.Script;
 
 public class GTScriptConverter {
 
-	public static Script convert(List<Action> script, MappingStore mappings){
+	public static Script convert(List<Action> script, MappingStore mappings, boolean ignoreImport){
 		Script convertedScript = new Script();
 		for(Action op : script){
 			//Ignore import declaration related changes.
-			if("ImportDeclaration".equals(op.getNode().getType().name)
-					|| "ImportDeclaration".equals(op.getNode().getParent().getType().name))
+			if(ignoreImport && ("ImportDeclaration".equals(op.getNode().getType().name)
+					|| "ImportDeclaration".equals(op.getNode().getParent().getType().name)))
 				continue;
 			if(op instanceof TreeAction) {
 				List<ESNodeEdit> edits = convertTreeOp((TreeAction)op, mappings);
@@ -36,6 +36,10 @@ public class GTScriptConverter {
 			}
 		}
 		return convertedScript;
+	}
+
+	public static Script convert(List<Action> script, MappingStore mappings){
+		return convert(script, mappings, true);
 	}
 
 	private static List<ESNodeEdit> convertTreeOp(TreeAction op, MappingStore mappings) {
