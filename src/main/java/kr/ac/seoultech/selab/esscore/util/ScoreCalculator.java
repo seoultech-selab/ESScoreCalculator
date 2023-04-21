@@ -1,13 +1,13 @@
-package util;
+package kr.ac.seoultech.selab.esscore.util;
 
 import com.google.common.collect.HashMultiset;
 import com.google.common.collect.Multiset;
 import com.google.common.collect.Multisets;
 
-import model.Benchmark;
-import model.ESNodeEdit;
-import model.Score;
-import model.Script;
+import kr.ac.seoultech.selab.esscore.model.Benchmark;
+import kr.ac.seoultech.selab.esscore.model.ESNodeEdit;
+import kr.ac.seoultech.selab.esscore.model.Score;
+import kr.ac.seoultech.selab.esscore.model.Script;
 
 public class ScoreCalculator {
 

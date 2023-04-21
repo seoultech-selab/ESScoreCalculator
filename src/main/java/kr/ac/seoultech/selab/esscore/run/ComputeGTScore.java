@@ -1,4 +1,4 @@
-package run;
+package kr.ac.seoultech.selab.esscore.run;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -26,11 +26,11 @@ import com.github.gumtreediff.matchers.Matcher;
 import com.github.gumtreediff.matchers.Matchers;
 import com.github.gumtreediff.tree.Tree;
 
-import model.Benchmark;
-import model.Score;
-import model.Script;
-import util.GTScriptConverter;
-import util.ScoreCalculator;
+import kr.ac.seoultech.selab.esscore.model.Benchmark;
+import kr.ac.seoultech.selab.esscore.model.Score;
+import kr.ac.seoultech.selab.esscore.model.Script;
+import kr.ac.seoultech.selab.esscore.util.GTScriptConverter;
+import kr.ac.seoultech.selab.esscore.util.ScoreCalculator;
 
 public class ComputeGTScore {
 

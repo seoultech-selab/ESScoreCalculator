@@ -1,4 +1,4 @@
-package model;
+package kr.ac.seoultech.selab.esscore.model;
 
 public class Score {
 	public double score;

@@ -1,4 +1,4 @@
-package util;
+package kr.ac.seoultech.selab.esscore.util;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -14,9 +14,9 @@ import com.github.gumtreediff.actions.model.Update;
 import com.github.gumtreediff.matchers.MappingStore;
 import com.github.gumtreediff.tree.Tree;
 
-import model.ESNode;
-import model.ESNodeEdit;
-import model.Script;
+import kr.ac.seoultech.selab.esscore.model.ESNode;
+import kr.ac.seoultech.selab.esscore.model.ESNodeEdit;
+import kr.ac.seoultech.selab.esscore.model.Script;
 
 public class GTScriptConverter {
 

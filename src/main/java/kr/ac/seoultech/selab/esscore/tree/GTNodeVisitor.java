@@ -1,4 +1,4 @@
-package tree;
+package kr.ac.seoultech.selab.esscore.tree;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -19,7 +19,7 @@ import org.eclipse.jdt.core.dom.QualifiedName;
 import org.eclipse.jdt.core.dom.StringLiteral;
 import org.eclipse.jdt.core.dom.Type;
 
-import model.ESNode;
+import kr.ac.seoultech.selab.esscore.model.ESNode;
 
 public class GTNodeVisitor extends ASTVisitor {
 	private Stack<ESNode> nodeStack;

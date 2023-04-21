@@ -1,4 +1,4 @@
-package run;
+package kr.ac.seoultech.selab.esscore.run;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -9,12 +9,12 @@ import org.eclipse.core.runtime.CoreException;
 import hk.ust.cse.pishon.esgen.model.Change;
 import hk.ust.cse.pishon.esgen.model.EditOp;
 import hk.ust.cse.pishon.esgen.model.EditScript;
-import model.ESNode;
-import model.ESNodeEdit;
-import model.TreeEdit;
-import util.CodeHandler;
-import util.FileHandler;
-import util.ScriptConverter;
+import kr.ac.seoultech.selab.esscore.model.ESNode;
+import kr.ac.seoultech.selab.esscore.model.ESNodeEdit;
+import kr.ac.seoultech.selab.esscore.model.TreeEdit;
+import kr.ac.seoultech.selab.esscore.util.CodeHandler;
+import kr.ac.seoultech.selab.esscore.util.FileHandler;
+import kr.ac.seoultech.selab.esscore.util.ScriptConverter;
 
 public class ImportChanges {
 

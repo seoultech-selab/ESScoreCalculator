@@ -1,4 +1,4 @@
-package model;
+package kr.ac.seoultech.selab.esscore.model;
 
 import java.util.ArrayList;
 import java.util.List;

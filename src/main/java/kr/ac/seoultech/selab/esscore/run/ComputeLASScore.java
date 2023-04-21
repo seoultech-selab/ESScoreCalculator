@@ -1,4 +1,4 @@
-package run;
+package kr.ac.seoultech.selab.esscore.run;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -11,16 +11,16 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
-import model.Benchmark;
-import model.Score;
-import model.Script;
+import kr.ac.seoultech.selab.esscore.model.Benchmark;
+import kr.ac.seoultech.selab.esscore.model.Score;
+import kr.ac.seoultech.selab.esscore.model.Script;
+import kr.ac.seoultech.selab.esscore.util.LASScriptConverter;
+import kr.ac.seoultech.selab.esscore.util.ScoreCalculator;
 import script.ScriptGenerator;
 import script.model.EditOp;
 import script.model.EditScript;
 import tree.Tree;
 import tree.TreeBuilder;
-import util.LASScriptConverter;
-import util.ScoreCalculator;
 
 public class ComputeLASScore {
 

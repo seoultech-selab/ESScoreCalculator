@@ -31,6 +31,6 @@ test {
     useJUnitPlatform()
 }
 
-group = 'seoultech.selab'
-version = '0.0.1-SNAPSHOT'
+group = 'kr.ac.seoultech.selab'
+version = '1.0.0-SNAPSHOT'
 sourceCompatibility = '1.9'

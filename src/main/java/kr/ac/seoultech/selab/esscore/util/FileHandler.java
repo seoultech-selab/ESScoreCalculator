@@ -1,4 +1,4 @@
-package util;
+package kr.ac.seoultech.selab.esscore.util;
 
 import java.io.BufferedReader;
 import java.io.File;

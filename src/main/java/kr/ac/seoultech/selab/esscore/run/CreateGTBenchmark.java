@@ -1,4 +1,4 @@
-package run;
+package kr.ac.seoultech.selab.esscore.run;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -25,23 +25,22 @@ import com.google.common.base.Charsets;
 import com.google.common.io.CharStreams;
 
 import hk.ust.cse.pishon.esgen.model.Change;
-import model.Benchmark;
-import model.ESNode;
-import model.Script;
-import tree.NodeVisitor;
-import util.ScriptConverter;
+import kr.ac.seoultech.selab.esscore.model.Benchmark;
+import kr.ac.seoultech.selab.esscore.model.ESNode;
+import kr.ac.seoultech.selab.esscore.model.Script;
+import kr.ac.seoultech.selab.esscore.tree.GTNodeVisitor;
+import kr.ac.seoultech.selab.esscore.util.ScriptConverter;
 
-public class CreateBenchmark {
+public class CreateGTBenchmark {
 
 	public static void main(String[] args) {
 		String path = null;
 		if(args.length >= 1){
 			path = args[0];
 		}else{
-			System.out.println("CreateBenchmark [path to files]");
+			System.out.println("CreateGTBenchmark [path to files]");
 			path = "Scripts";
 		}
-		System.setProperty("las.enable.gumtree.ast", "false");
 		Benchmark benchmark = new Benchmark();
 		List<File> files = findChangeFiles(new File(path));
 		System.out.println("Total "+files.size()+" Change Files.");
@@ -50,7 +49,6 @@ public class CreateBenchmark {
 		ScriptConverter converter = new ScriptConverter();
 		List<ESNode> oldNodes = null;
 		List<ESNode> newNodes = null;
-
 		for(Change change : changes){
 			try {
 				String oldCode = convertToString(change.getOldFile().getContents());
@@ -61,7 +59,6 @@ public class CreateBenchmark {
 				newNodes = parse(newCode);
 				Script script = converter.convert(change.getScript(), oldNodes, newNodes);
 				benchmark.addItem(changeName, script);
-
 			} catch (CoreException e) {
 				e.printStackTrace();
 			}
@@ -72,6 +69,7 @@ public class CreateBenchmark {
 			System.out.println("Uniq. Script Count:"+benchmark.uniqueCount(changeName));
 			System.out.println("Total Script Count:"+benchmark.totalCount(changeName));
 			StringBuffer sb = new StringBuffer();
+			sb.append("Number of Scripts:"+benchmark.uniqueCount(changeName)+"\n");
 			for(Script s : benchmark.getScripts(changeName).elementSet()){
 				sb.append("Script\n");
 				sb.append(s.textScript+"\n");
@@ -79,9 +77,9 @@ public class CreateBenchmark {
 				sb.append("Size:"+s.editOps.size()+"\n");
 				sb.append(s.toString()+"\n");
 			}
-			saveToFile("changes/"+changeName+"/benchmark_las.txt", sb.toString());
+			saveToFile("changes/"+changeName+"/benchmark_gt.txt", sb.toString());
 		}
-		storeBenchmark("benchmark.obj", benchmark);
+		storeBenchmark("benchmark_gt.obj", benchmark);
 	}
 
 	private static void saveToFile(String fileName, String content) {
@@ -142,7 +140,7 @@ public class CreateBenchmark {
 	private static List<ESNode> parse(String content) {
 		List<ESNode> nodes = new ArrayList<>();
 		CompilationUnit cu = getCompilationUnit(content);
-		NodeVisitor visitor = new NodeVisitor();
+		GTNodeVisitor visitor = new GTNodeVisitor();
 		cu.accept(visitor);
 		nodes.addAll(visitor.nodes);
 		return nodes;
@@ -161,7 +159,7 @@ public class CreateBenchmark {
 	}
 
 	private static List<Change> readChanges(List<File> files) {
-		List<Change> changes = new ArrayList<>();
+		List<Change> changes = new ArrayList<Change>();
 		FileInputStream fis = null;
 		ObjectInputStream in = null;
 		for(File f : files){

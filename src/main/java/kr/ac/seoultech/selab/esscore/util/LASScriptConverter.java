@@ -1,13 +1,13 @@
-package util;
+package kr.ac.seoultech.selab.esscore.util;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import org.eclipse.jdt.core.dom.ASTNode;
 
-import model.ESNode;
-import model.ESNodeEdit;
-import model.Script;
+import kr.ac.seoultech.selab.esscore.model.ESNode;
+import kr.ac.seoultech.selab.esscore.model.ESNodeEdit;
+import kr.ac.seoultech.selab.esscore.model.Script;
 import script.model.EditOp;
 import script.model.EditScript;
 import tree.TreeNode;

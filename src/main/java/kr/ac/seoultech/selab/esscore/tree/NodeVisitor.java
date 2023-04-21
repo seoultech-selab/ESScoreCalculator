@@ -1,4 +1,4 @@
-package tree;
+package kr.ac.seoultech.selab.esscore.tree;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -24,7 +24,8 @@ import org.eclipse.jdt.core.dom.StringLiteral;
 import org.eclipse.jdt.core.dom.SwitchCase;
 import org.eclipse.jdt.core.dom.SwitchStatement;
 
-import model.ESNode;
+import kr.ac.seoultech.selab.esscore.model.ESNode;
+import tree.TreeNode;
 
 public class NodeVisitor extends ASTVisitor {
 

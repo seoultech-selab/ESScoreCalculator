@@ -1,13 +1,13 @@
-package util;
+package kr.ac.seoultech.selab.esscore.util;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import hk.ust.cse.pishon.esgen.model.EditOp;
 import hk.ust.cse.pishon.esgen.model.EditScript;
-import model.ESNode;
-import model.ESNodeEdit;
-import model.TreeEdit;
+import kr.ac.seoultech.selab.esscore.model.ESNode;
+import kr.ac.seoultech.selab.esscore.model.ESNodeEdit;
+import kr.ac.seoultech.selab.esscore.model.TreeEdit;
 import tree.TreeNode;
 
 public class ScriptConverter implements ConvertScript {
@@ -16,13 +16,13 @@ public class ScriptConverter implements ConvertScript {
 	public static final String TREE_TYPE_GT = "GumTree";
 
 	@Override
-	public model.Script convert(EditScript script, List<ESNode> oldNodes, List<ESNode> newNodes){
+	public kr.ac.seoultech.selab.esscore.model.Script convert(EditScript script, List<ESNode> oldNodes, List<ESNode> newNodes){
 		return convert(script, oldNodes, newNodes, TREE_TYPE_LAS);
 	}
 
 	@Override
-	public model.Script convert(EditScript script, List<ESNode> oldNodes, List<ESNode> newNodes, String treeType){
-		model.Script converted = new model.Script(toTextScript(script));
+	public kr.ac.seoultech.selab.esscore.model.Script convert(EditScript script, List<ESNode> oldNodes, List<ESNode> newNodes, String treeType){
+		kr.ac.seoultech.selab.esscore.model.Script converted = new kr.ac.seoultech.selab.esscore.model.Script(toTextScript(script));
 		for(EditOp op : script.getEditOps()){
 			converted.editOps.addAll(convert(op, oldNodes, newNodes, treeType));
 		}
