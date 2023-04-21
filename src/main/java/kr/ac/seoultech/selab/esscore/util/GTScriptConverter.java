@@ -20,7 +20,7 @@ import kr.ac.seoultech.selab.esscore.model.Script;
 
 public class GTScriptConverter {
 
-	public static Script convert(List<Action> script, MappingStore mappings, boolean ignoreImport){
+	public static Script convert(List<Action> script, MappingStore mappings, boolean ignoreImport, boolean combineTree){
 		Script convertedScript = new Script();
 		for(Action op : script){
 			//Ignore import declaration related changes.
@@ -28,7 +28,7 @@ public class GTScriptConverter {
 					|| "ImportDeclaration".equals(op.getNode().getParent().getType().name)))
 				continue;
 			if(op instanceof TreeAction) {
-				List<ESNodeEdit> edits = convertTreeOp((TreeAction)op, mappings);
+				List<ESNodeEdit> edits = convertTreeOp((TreeAction)op, mappings, combineTree);
 				convertedScript.editOps.addAll(edits);
 			} else {
 				ESNodeEdit edit = convert(op, mappings);
@@ -39,10 +39,10 @@ public class GTScriptConverter {
 	}
 
 	public static Script convert(List<Action> script, MappingStore mappings){
-		return convert(script, mappings, true);
+		return convert(script, mappings, true, false);
 	}
 
-	private static List<ESNodeEdit> convertTreeOp(TreeAction op, MappingStore mappings) {
+	private static List<ESNodeEdit> convertTreeOp(TreeAction op, MappingStore mappings, boolean combineTree) {
 		List<ESNodeEdit> edits = new ArrayList<>();
 		List<ESNode> nodes = new ArrayList<>();
 		Tree n = op.getNode();
@@ -53,17 +53,22 @@ public class GTScriptConverter {
 			ESNode location = convertNode(p);
 			ESNodeEdit edit = new ESNodeEdit(ESNodeEdit.OP_INSERT, node, location, insert.getPosition());
 			edits.add(edit);
-			for(ESNode c : nodes.subList(1, nodes.size())) {
-				edit = new ESNodeEdit(ESNodeEdit.OP_INSERT, c, c.parent, c.posInParent);
-				edits.add(edit);
+			//Add separate node edits only if combineTree is false.
+			if(!combineTree) {
+				for(ESNode c : nodes.subList(1, nodes.size())) {
+					edit = new ESNodeEdit(ESNodeEdit.OP_INSERT, c, c.parent, c.posInParent);
+					edits.add(edit);
+				}
 			}
 		} else if (op instanceof TreeDelete) {
 			ESNode location = convertNode(n.getParent());
 			ESNodeEdit edit = new ESNodeEdit(ESNodeEdit.OP_DELETE, node, location, node.posInParent);
 			edits.add(edit);
-			for(ESNode c : nodes.subList(1, nodes.size())) {
-				edit = new ESNodeEdit(ESNodeEdit.OP_DELETE, c, c.parent, c.posInParent);
-				edits.add(edit);
+			if(!combineTree) {
+				for(ESNode c : nodes.subList(1, nodes.size())) {
+					edit = new ESNodeEdit(ESNodeEdit.OP_DELETE, c, c.parent, c.posInParent);
+					edits.add(edit);
+				}
 			}
 		}
 		return edits;
