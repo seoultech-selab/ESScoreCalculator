@@ -70,6 +70,17 @@ public class GTScriptConverter {
 					edits.add(edit);
 				}
 			}
+		} else if (op instanceof Move) {
+			Move move = (Move)op;
+			ESNode location = convertNode(move.getParent());
+			ESNodeEdit edit = new ESNodeEdit(ESNodeEdit.OP_MOVE, node, location, move.getPosition());
+			edits.add(edit);
+			if(!combineTree) {
+				for(ESNode c : nodes.subList(1, nodes.size())) {
+					edit = new ESNodeEdit(ESNodeEdit.OP_MOVE, c, c.parent, c.posInParent);
+					edits.add(edit);
+				}
+			}
 		}
 		return edits;
 	}
@@ -97,10 +108,6 @@ public class GTScriptConverter {
 			//Make a fake node with the updated value of this operation.
 			ESNode location = convertNode(mappings.getDstForSrc(op.getNode()));
 			edit = new ESNodeEdit(ESNodeEdit.OP_UPDATE, node, location, -1);
-		}else if(op instanceof Move){
-			Move move = (Move)op;
-			ESNode location = convertNode(move.getParent());
-			edit = new ESNodeEdit(ESNodeEdit.OP_MOVE, node, location, move.getPosition());
 		}
 		return edit;
 	}

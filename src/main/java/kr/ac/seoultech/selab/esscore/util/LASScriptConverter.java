@@ -17,16 +17,25 @@ public class LASScriptConverter {
 	public static Script convert(EditScript script){
 		Script convertedScript = new Script();
 		for(EditOp op : script.getEditOps()){
-			convertedScript.editOps.addAll(convert(op));
+			//Default - do not ignore import declarations.
+			convertedScript.editOps.addAll(convert(op, false));
 		}
 		return convertedScript;
 	}
 
-	private static List<ESNodeEdit> convert(EditOp editOp) {
+	public static Script convert(EditScript script, boolean ignoreImport){
+		Script convertedScript = new Script();
+		for(EditOp op : script.getEditOps()){
+			convertedScript.editOps.addAll(convert(op, ignoreImport));
+		}
+		return convertedScript;
+	}
+
+	private static List<ESNodeEdit> convert(EditOp editOp, boolean ignoreImport) {
 		List<ESNodeEdit> edits = new ArrayList<>();
 		List<EditOp> editOps = editOp.getSubtreeEdit();
 		for(EditOp op : editOps){
-			if(op.getNode().getType() == ASTNode.IMPORT_DECLARATION
+			if(ignoreImport && op.getNode().getType() == ASTNode.IMPORT_DECLARATION
 					|| (op.getNode().getParent() != null && op.getNode().getParent().getType() == ASTNode.IMPORT_DECLARATION))
 				continue;
 			ESNode node = new ESNode(op.getNode().getLabel(), op.getNode().getASTNode());
