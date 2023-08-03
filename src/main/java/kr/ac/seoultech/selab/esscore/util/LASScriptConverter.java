@@ -67,18 +67,7 @@ public class LASScriptConverter {
 	}
 
 	public static ESNode convertNode(TreeNode n) {
-		ESNode node = new ESNode(n.getLabel(), getTypeName(n.getType()), n.getStartPosition(), n.getLength());
+		ESNode node = new ESNode(n.getLabel(), CodeHandler.getTypeName(n.getType()), n.getStartPosition(), n.getLength());
 		return node;
 	}
-
-	public static String getTypeName(int type) {
-		String typeName = null;
-		try {
-			typeName = ASTNode.nodeClassForType(type).getSimpleName();
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		return typeName;
-	}
-
 }

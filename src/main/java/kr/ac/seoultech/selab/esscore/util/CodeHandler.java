@@ -6,6 +6,7 @@ import java.util.Map;
 
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.dom.AST;
+import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.ASTParser;
 import org.eclipse.jdt.core.dom.CompilationUnit;
 
@@ -37,6 +38,16 @@ public class CodeHandler {
 
 	public static String getEntityType(ESNode node) {
 		return node.type != null ? node.type : node.label.substring(0, node.label.indexOf('#'));
+	}
+
+	public static String getTypeName(int type) {
+		String typeName = null;
+		try {
+			typeName = ASTNode.nodeClassForType(type).getSimpleName();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return typeName;
 	}
 
 }
