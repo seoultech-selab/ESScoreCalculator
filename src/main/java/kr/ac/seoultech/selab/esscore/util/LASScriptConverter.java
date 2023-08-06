@@ -17,23 +17,43 @@ public class LASScriptConverter {
 	public static Script convert(EditScript script){
 		Script convertedScript = new Script();
 		for(EditOp op : script.getEditOps()){
-			convertedScript.editOps.addAll(convert(op));
+			//Default - do not ignore import declarations, separate node-level edits.
+			convertedScript.editOps.addAll(convert(op, false, false));
 		}
 		return convertedScript;
 	}
 
-	private static List<ESNodeEdit> convert(EditOp editOp) {
+	public static Script convert(EditScript script, boolean ignoreImport, boolean combineTree){
+		Script convertedScript = new Script();
+		for(EditOp op : script.getEditOps()){
+			convertedScript.editOps.addAll(convert(op, ignoreImport, combineTree));
+		}
+		return convertedScript;
+	}
+
+	private static List<ESNodeEdit> convert(EditOp editOp, boolean ignoreImport, boolean combineTree) {
 		List<ESNodeEdit> edits = new ArrayList<>();
-		List<EditOp> editOps = editOp.getSubtreeEdit();
-		for(EditOp op : editOps){
-			if(op.getNode().getType() == ASTNode.IMPORT_DECLARATION
-					|| (op.getNode().getParent() != null && op.getNode().getParent().getType() == ASTNode.IMPORT_DECLARATION))
-				continue;
-			ESNode node = new ESNode(op.getNode().getLabel(), op.getNode().getASTNode());
-			ESNode location = new ESNode(op.getLocation().getLabel(), op.getLocation().getASTNode());
-			String type = convertType(op.getType());
-			ESNodeEdit edit = new ESNodeEdit(type, node, location, op.getPosition());
+		if(combineTree) {
+			if(ignoreImport && editOp.getNode().getType() == ASTNode.IMPORT_DECLARATION
+					|| (editOp.getNode().getParent() != null && editOp.getNode().getParent().getType() == ASTNode.IMPORT_DECLARATION))
+				return edits;
+			ESNode node = new ESNode(editOp.getNode().getLabel(), editOp.getNode().getASTNode());
+			ESNode location = new ESNode(editOp.getLocation().getLabel(), editOp.getLocation().getASTNode());
+			String type = convertType(editOp.getType());
+			ESNodeEdit edit = new ESNodeEdit(type, node, location, editOp.getPosition());
 			edits.add(edit);
+		} else {
+			List<EditOp> editOps = editOp.getSubtreeEdit();
+			for(EditOp op : editOps){
+				if(ignoreImport && op.getNode().getType() == ASTNode.IMPORT_DECLARATION
+						|| (op.getNode().getParent() != null && op.getNode().getParent().getType() == ASTNode.IMPORT_DECLARATION))
+					continue;
+				ESNode node = new ESNode(op.getNode().getLabel(), op.getNode().getASTNode());
+				ESNode location = new ESNode(op.getLocation().getLabel(), op.getLocation().getASTNode());
+				String type = convertType(op.getType());
+				ESNodeEdit edit = new ESNodeEdit(type, node, location, op.getPosition());
+				edits.add(edit);
+			}
 		}
 		return edits;
 	}

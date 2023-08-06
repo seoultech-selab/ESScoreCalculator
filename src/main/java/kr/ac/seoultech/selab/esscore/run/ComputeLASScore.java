@@ -48,7 +48,7 @@ public class ComputeLASScore {
 				for(EditOp op : lasScript.getEditOps()){
 					size += op.size();
 				}
-				Script script = LASScriptConverter.convert(lasScript);
+				Script script = LASScriptConverter.convert(lasScript, true, false);
 				System.out.println(lasScript);
 				scores.put(changeName, calculator.getBestMatchScore(changeName, script));
 				Score score = scores.get(changeName);
