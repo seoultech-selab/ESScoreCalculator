@@ -1,5 +1,6 @@
 package kr.ac.seoultech.selab.esscore.util;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -10,6 +11,11 @@ import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.ASTParser;
 import org.eclipse.jdt.core.dom.CompilationUnit;
 
+import com.github.gumtreediff.gen.TreeGenerator;
+import com.github.gumtreediff.tree.ITree;
+import com.github.gumtreediff.tree.TreeContext;
+
+import at.aau.softwaredynamics.gen.OptimizedJdtTreeGenerator;
 import kr.ac.seoultech.selab.esscore.model.ESNode;
 import kr.ac.seoultech.selab.esscore.tree.NodeVisitor;
 
@@ -48,6 +54,23 @@ public class CodeHandler {
 			e.printStackTrace();
 		}
 		return typeName;
+	}
+
+	/**
+	 * @param code
+	 * @return a list of converted nodes visited in DFS.
+	 * @throws IOException
+	 */
+	public static List<ESNode> parseIJM(String code) throws Exception {
+		List<ESNode> nodes = new ArrayList<>();
+		TreeGenerator generator = new OptimizedJdtTreeGenerator();
+		TreeContext tree = generator.generateFromString(code);
+		ITree root = tree.getRoot();
+		//		TreeMap<Integer, Integer> posLineMap = IJMScriptConverter.computePosLineMap(code);
+		//For simple parsing, no need to adjust nodes' positions.
+		IJMScriptConverter.convert(root, nodes);
+
+		return nodes;
 	}
 
 }

@@ -1,6 +1,7 @@
 package kr.ac.seoultech.selab.esscore.util;
 
 import java.util.List;
+import java.util.TreeMap;
 
 import org.eclipse.jdt.core.dom.ASTNode;
 
@@ -14,7 +15,14 @@ import kr.ac.seoultech.selab.esscore.model.Script;
 
 public class IJMScriptConverter {
 
-	public static Script convert(List<SourceCodeChange> script, boolean ignoreImport, boolean combineTree){
+	private static final String NO_POS_LINE_MAP_ERR = "Position-Line map must be computed before conversion. Try computePosLineMap(oldCode, newCode) first.";
+	public static TreeMap<Integer, Integer> oldPosLineMap = null;
+	public static TreeMap<Integer, Integer> newPosLineMap = null;
+
+	public static Script convert(List<SourceCodeChange> script, boolean ignoreImport, boolean combineTree) throws Exception {
+		if(oldPosLineMap == null || newPosLineMap == null) {
+			throw new Exception(NO_POS_LINE_MAP_ERR);
+		}
 		Script convertedScript = new Script();
 		for(SourceCodeChange op : script){
 			//Ignore import declaration related changes.
@@ -27,15 +35,28 @@ public class IJMScriptConverter {
 		return convertedScript;
 	}
 
-	public static Script convert(List<SourceCodeChange> script){
+	public static Script convert(List<SourceCodeChange> script) throws Exception{
 		return convert(script, true, false);
 	}
 
-	public static ESNode convert(ITree n, List<ESNode> nodes) {
-		ESNode node = convertNode(n);
+	public static ESNode convert(ITree n, List<ESNode> nodes, boolean fromOldCode) throws Exception {
+		if((fromOldCode && oldPosLineMap == null)
+				|| (!fromOldCode && newPosLineMap == null)) {
+			throw new Exception(NO_POS_LINE_MAP_ERR);
+		}
+		TreeMap<Integer, Integer> posLineMap = fromOldCode ? oldPosLineMap : newPosLineMap;
+		return convert(n, nodes, posLineMap);
+	}
+
+	public static ESNode convert(ITree n, List<ESNode> nodes) throws Exception {
+		return convert(n, nodes, null);
+	}
+
+	public static ESNode convert(ITree n, List<ESNode> nodes, TreeMap<Integer, Integer> posLineMap) throws Exception {
+		ESNode node = convertNode(n, posLineMap);
 		nodes.add(node);
 		for(ITree c : n.getChildren()) {
-			node.addChild(convert(c, nodes));
+			node.addChild(convert(c, nodes, posLineMap));
 		}
 		return node;
 	}
@@ -48,14 +69,12 @@ public class IJMScriptConverter {
 		case "INS":
 			converted = ESNodeEdit.OP_INSERT;
 			node = convertNode(op.getDstInfo());
-			// TODO: need to make adjustment for startPos, length later.
-			// Consider offset diff. when computing scores for now.
-			location = convertNode(op.getNode().getParent());
+			location = convertNode(op.getNode().getParent(), newPosLineMap);
 			break;
 		case "DEL":
 			converted = ESNodeEdit.OP_DELETE;
 			node = convertNode(op.getSrcInfo());
-			location = convertNode(op.getNode().getParent());
+			location = convertNode(op.getNode().getParent(), oldPosLineMap);
 			break;
 		case "MOV":
 			converted = ESNodeEdit.OP_MOVE;
@@ -78,8 +97,60 @@ public class IJMScriptConverter {
 		return new ESNode(info.getLabel(), typeName, pos, info.getLength());
 	}
 
-	public static ESNode convertNode(ITree node) {
-		//Need to generate nodes from src/dst info.
-		return new ESNode(node.getLabel(), CodeHandler.getTypeName(node.getType()), node.getPos(), node.getLength());
+	public static ESNode convertNode(ITree node, boolean fromOldCode) throws Exception {
+		if(oldPosLineMap == null || newPosLineMap == null) {
+			throw new Exception(NO_POS_LINE_MAP_ERR);
+		}
+		if(fromOldCode) {
+			return convertNode(node, oldPosLineMap);
+		} else {
+			return convertNode(node, newPosLineMap);
+		}
 	}
+
+	public static ESNode convertNode(ITree node) {
+		return convertNode(node, null);
+	}
+
+	public static ESNode convertNode(ITree node, TreeMap<Integer, Integer> posLineMap) {
+		if(posLineMap == null)
+			return new ESNode(node.getLabel(), CodeHandler.getTypeName(node.getType()), node.getPos(), node.getLength());
+		int pos = getAdjustedPos(node.getPos(), posLineMap);
+		return pos == -1 ? null : new ESNode(node.getLabel(), CodeHandler.getTypeName(node.getType()), pos, node.getLength());
+	}
+
+	public static void computePosLineMap(String oldCode, String newCode) {
+		oldPosLineMap = computePosLineMap(oldCode);
+		newPosLineMap = computePosLineMap(newCode);
+	}
+
+	public static TreeMap<Integer, Integer> computePosLineMap(String code) {
+		//Given a position of a node from IJM, compute the start line number for offset adjustment.
+		TreeMap<Integer, Integer> posLineMap = new TreeMap<>();
+		String[] lines = code.split("\\n");
+		int lineEndPos = 0;
+		int lineNum = 1;
+		int lineOffset = 0;
+		for(String line : lines) {
+			lineEndPos += line.length()+1;
+			posLineMap.put(lineEndPos+lineOffset++, lineNum++);
+		}
+		//Must add final lineEndPos for positions exceed the last line.
+		posLineMap.put(lineEndPos+lines.length, lineNum);
+
+		return posLineMap;
+	}
+
+	public static int getAdjustedPos(int pos, TreeMap<Integer, Integer> posLineMap) {
+		int lineNum = getLineNumber(pos, posLineMap);
+		return lineNum == -1 ? -1 : pos - lineNum + 1;
+	}
+
+	private static int getLineNumber(int pos, TreeMap<Integer, Integer> posLineMap) {
+		if(posLineMap == null)
+			return -1;
+		Integer key = posLineMap.ceilingKey(pos);
+		return key == null ? -1 : posLineMap.get(key);
+	}
+
 }
