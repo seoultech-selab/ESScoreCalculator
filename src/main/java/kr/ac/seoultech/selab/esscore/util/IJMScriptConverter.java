@@ -65,30 +65,44 @@ public class IJMScriptConverter {
 		ESNode node = null;
 		ESNode location = null;
 		String converted = "";
+		int pos = -1;
 		switch(op.getAction().getName()){
 		case "INS":
 			converted = ESNodeEdit.OP_INSERT;
 			node = convertNode(op.getDstInfo());
 			location = convertNode(op.getNode().getParent(), newPosLineMap);
+			pos = findPosInParent(op.getNode());
 			break;
 		case "DEL":
 			converted = ESNodeEdit.OP_DELETE;
 			node = convertNode(op.getSrcInfo());
 			location = convertNode(op.getNode().getParent(), oldPosLineMap);
+			pos = findPosInParent(op.getNode());
 			break;
 		case "MOV":
 			converted = ESNodeEdit.OP_MOVE;
 			node = convertNode(op.getSrcInfo());
 			location = convertNode(op.getDstInfo());
+			//position should be new node's position.
+			pos = findPosInParent(op.getDstInfo().getNode());
 			break;
 		case "UPD":
 			converted = ESNodeEdit.OP_UPDATE;
 			node = convertNode(op.getSrcInfo());
 			location = convertNode(op.getDstInfo());
+			//In case of update, using default position.
 			break;
 		}
-		ESNodeEdit edit = new ESNodeEdit(converted, node, location, op.getPosition());
+		ESNodeEdit edit = new ESNodeEdit(converted, node, location, pos);
 		return edit;
+	}
+
+	private static int findPosInParent(ITree node) {
+		ITree parent = node.getParent();
+		if(parent != null) {
+			return parent.getChildPosition(node);
+		}
+		return -1;
 	}
 
 	public static ESNode convertNode(NodeInfo info) {
