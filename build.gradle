@@ -36,5 +36,5 @@ test {
 }
 
 group = 'kr.ac.seoultech.selab'
-version = '1.0.0-SNAPSHOT'
+version = '1.0.0-IJM'
 sourceCompatibility = '1.9'
