@@ -22,8 +22,11 @@ import com.google.common.io.CharStreams;
 
 import hk.ust.cse.pishon.esgen.model.Change;
 import hk.ust.cse.pishon.esgen.model.Node;
+import kr.ac.seoultech.selab.esscore.model.Benchmark;
 
 public class FileHandler {
+
+	public static final String CHANGE_FILE_NAME = "changes.obj";
 
 	public static HashMap<String, Node> readScripts(File f) {
 		HashMap<String, Node> item = null;
@@ -101,12 +104,12 @@ public class FileHandler {
 			for(File f : targets){
 				if(f.isDirectory()){
 					files.addAll(findChangeFiles(f));
-				}else if(f.getName().equals("changes.obj")){
+				}else if(f.getName().equals(CHANGE_FILE_NAME)){
 					files.add(f);
 				}
 			}
 		}else{
-			if(path.getName().equals("changes.obj")){
+			if(path.getName().equals(CHANGE_FILE_NAME)){
 				files.add(path);
 			}
 		}
@@ -207,6 +210,38 @@ public class FileHandler {
 				e.printStackTrace();
 			}
 		}
+	}
+
+	public static Benchmark readBenchmark(String benchmarkPath) {
+		File f = new File(benchmarkPath);
+		if(f.exists()){
+			FileInputStream fis = null;
+			ObjectInputStream in = null;
+			try {
+				fis = new FileInputStream(f);
+				in = new ObjectInputStream(fis);
+				Object obj = in.readObject();
+				if(obj instanceof Benchmark){
+					return (Benchmark)obj;
+				}
+			} catch (FileNotFoundException e) {
+				e.printStackTrace();
+			} catch (IOException e) {
+				e.printStackTrace();
+			} catch (ClassNotFoundException e) {
+				e.printStackTrace();
+			} finally {
+				try {
+					if(fis != null)
+						fis.close();
+					if(in != null)
+						in.close();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
+		}
+		return null;
 	}
 
 }

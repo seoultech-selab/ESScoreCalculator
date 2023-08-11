@@ -14,6 +14,7 @@ public class ScriptConverter implements ConvertScript {
 
 	public static final String TREE_TYPE_LAS = "LAS";
 	public static final String TREE_TYPE_GT = "GumTree";
+	public static final String TREE_TYPE_IJM = "IJM";
 
 	@Override
 	public kr.ac.seoultech.selab.esscore.model.Script convert(EditScript script, List<ESNode> oldNodes, List<ESNode> newNodes){
@@ -172,10 +173,15 @@ public class ScriptConverter implements ConvertScript {
 	}
 
 	private boolean checkNode(ESNode node, String treeType) {
-		if(TREE_TYPE_LAS.equals(treeType))
+		switch(treeType) {
+		case TREE_TYPE_LAS:
 			return node.label.contains(TreeNode.DELIM);
-		else if(TREE_TYPE_GT.equals(treeType))
+		case TREE_TYPE_GT:
 			return !"".equals(node.label);
+		case TREE_TYPE_IJM:
+			//TODO:Check condition for IJM.
+			return !"".equals(node.label);
+		}
 		return false;
 	}
 
