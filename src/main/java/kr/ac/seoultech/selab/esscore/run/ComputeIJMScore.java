@@ -43,6 +43,7 @@ public class ComputeIJMScore {
 				String oldCode = benchmark.getOldCode(changeName);
 				String newCode = benchmark.getNewCode(changeName);
 				List<SourceCodeChange> changes = getIJMScript(oldCode, newCode);
+				IJMScriptConverter.computePosLineMap(oldCode, newCode);
 				Script script = IJMScriptConverter.convert(changes, true, false);
 				scores.put(changeName, calculator.getBestMatchScore(changeName, script));
 				Score score = scores.get(changeName);

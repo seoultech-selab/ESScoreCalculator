@@ -218,7 +218,9 @@ public class ScriptConverter implements ConvertScript {
 
 		//Then include descendants within range.
 		//Don't add CompilationUnit change which works as the root. This is to remove comment changes.
-		if(!"CompilationUnit".equals(smallest.type) && !"ImportDeclaration".equals(smallest.type))
+		if(!"CompilationUnit".equals(smallest.type)
+				&& !"ImportDeclaration".equals(smallest.type)
+				&& (smallest.parent != null && !"ImportDeclaration".equals(smallest.parent.type)))
 			nodesInRange.add(smallest);
 		findNodes(smallest, nodesInRange, startPos, endPos);
 
