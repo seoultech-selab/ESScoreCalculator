@@ -73,6 +73,8 @@ public class LASScriptConverter {
 		case "update":
 			converted = ESNodeEdit.OP_UPDATE;
 			break;
+		default:
+			converted = type;
 		}
 		return converted;
 	}
